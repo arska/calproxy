@@ -3,8 +3,14 @@ import os
 import requests
 app = Flask(__name__)
 
-@app.route("/")
-def calproxy():
+@app.route('/', defaults={'path': 'root'})
+@app.route('/<path:path>')
+def calproxy(path):
+    # check if there is a corresponding env var set, return empty response (without requiring auth) if not
+    url = os.environ.get('URL_' + path, False)
+    if not url:
+        return ''
+
     auth = request.authorization
     if os.environ.get('AUTHUSER', False) and os.environ.get('AUTHPASS', False):
         # require authentication
@@ -15,7 +21,7 @@ def calproxy():
                 {'WWW-Authenticate': 'Basic realm="Login Required"'}
             )
     # if no auth is required or if proper credentials were provided continue
-    r = requests.get(os.environ.get('URL'))
+    r = requests.get(url)
     return r.text
 
 if __name__ == "__main__":
