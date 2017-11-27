@@ -1,6 +1,9 @@
 from flask import Flask, Response, request
 import os
 import requests
+from werkzeug.contrib.cache import SimpleCache
+cache = SimpleCache()
+
 app = Flask(__name__)
 
 @app.route('/', defaults={'path': 'root'})
@@ -21,8 +24,12 @@ def calproxy(path):
                 {'WWW-Authenticate': 'Basic realm="Login Required"'}
             )
     # if no auth is required or if proper credentials were provided continue
-    r = requests.get(url)
-    return r.text
+    data = cache.get(url)
+    if data == None:
+        r = requests.get(url)
+        data = r.text
+        cache.set(url, data, timeout=os.environ.get('cachetime', 5*60))
+    return data
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port=8080)
+    app.run(host='0.0.0.0',port=os.environ.get('listenport', 8080))
