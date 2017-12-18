@@ -1,10 +1,18 @@
 from flask import Flask, Response, request
 import os
 import requests
-from werkzeug.contrib.cache import SimpleCache
-cache = SimpleCache()
+from werkzeug.contrib.cache import FileSystemCache
+cache = FileSystemCache(cache_dir="cache/")
+import time
+from prometheus_client import Histogram, Counter, Summary, Gauge, REGISTRY, generate_latest
 
 app = Flask(__name__)
+FLASK_REQUEST_LATENCY = Histogram('flask_request_latency_seconds', 'Flask Request Latency', ['method', 'endpoint'])
+FLASK_REQUEST_COUNT = Counter('flask_request_count', 'Flask Request Count', ['method', 'endpoint', 'http_status'])
+
+@app.route('/metrics')
+def metrics():
+    return generate_latest(REGISTRY)
 
 @app.route('/', defaults={'path': 'root'})
 @app.route('/<path:path>')
@@ -31,5 +39,17 @@ def calproxy(path):
         cache.set(url, data, timeout=os.environ.get('cachetime', 5*60))
     return data
 
+def before_request():
+    request.start_time = time.time()
+
+def after_request(response):
+    request_latency = max(time.time() - request.start_time, 0) # time can go backwards...
+    FLASK_REQUEST_LATENCY.labels(request.method, request.path).observe(request_latency)
+    FLASK_REQUEST_COUNT.labels(request.method, request.path, response.status_code).inc()
+    return response
+
 if __name__ == "__main__":
+    app.before_request(before_request)
+    app.after_request(after_request)
     app.run(host='0.0.0.0',port=os.environ.get('listenport', 8080))
+
