@@ -5,6 +5,7 @@ from werkzeug.contrib.cache import FileSystemCache
 cache = FileSystemCache(cache_dir="cache/")
 import time
 from prometheus_client import Histogram, Counter, Summary, Gauge, REGISTRY, generate_latest
+from threading import Thread
 
 app = Flask(__name__)
 FLASK_REQUEST_LATENCY = Histogram('flask_request_latency_seconds', 'Flask Request Latency', ['method', 'endpoint'])
@@ -15,8 +16,9 @@ def metrics():
     return generate_latest(REGISTRY)
 
 @app.route('/', defaults={'path': 'root'})
-@app.route('/<path:path>')
+@app.route('/<path>')
 def calproxy(path):
+    print("request: %s" % path)
     # check if there is a corresponding env var set, return empty response (without requiring auth) if not
     url = os.environ.get('URL_' + path, False)
     if not url:
@@ -34,9 +36,20 @@ def calproxy(path):
     # if no auth is required or if proper credentials were provided continue
     data = cache.get(url)
     if data == None:
-        r = requests.get(url)
-        data = r.text
-        cache.set(url, data, timeout=os.environ.get('cachetime', 5*60))
+        data = update(url)
+    age = time.time() - data['time']
+    print('data from %d (age %d)' % (data['time'], age))
+    if age > os.environ.get('cachetime', 15*60) or age < 0:
+        Thread(target=update,args=(url,)).start()
+    resp = Response(data['data'].text)
+    resp.headers['Content-Type'] = data['data'].headers['Content-Type']
+    return resp
+
+def update(url):
+    r = requests.get(url)
+    r.raise_for_status()
+    data = {'data': r, 'time': time.time()}
+    cache.set(url, data, timeout=0)
     return data
 
 def before_request():
