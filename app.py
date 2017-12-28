@@ -42,7 +42,7 @@ def calproxy(path):
         #data = update(url)
         print("no data for %s, spawning async update, returning 404" % path)
         async_update(url)
-        abort(404)
+        abort(504)
     age = time.time() - data['time']
     print('data from %d (age %d)' % (data['time'], age))
     if age > os.environ.get('cachetime', 60*60) or age < 0:

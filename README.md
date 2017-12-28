@@ -14,6 +14,6 @@ Authentication is only enforced if both AUTHUSER and AUTHPASS are specified
 
 if there is no corresponding URL_path environment variable for a requested path the proxy returns an empty response (without requiring authentication, e.g. for a health check).
 
-When a URL is requested the first time and the cache is empty an update is scheduled to happen in the background and an error (404 not found) is returned. As soon as the data is in the cache it is returned to requests. After the cachetime has expired each request will schedule an update in the background and old data will be returned until the update has completed. Only one update will run concurrently per target/upstream URL.
+When a URL is requested the first time and the cache is empty an update is scheduled to happen in the background and an error (504 gateway timeout) is returned. As soon as the data is in the cache it is returned to requests. After the cachetime has expired each request will schedule an update in the background and old data will be returned until the update has completed. Only one update will run concurrently per target/upstream URL.
 
 The project is called calproxy because my use case is to proxy calendar availabilities where the upstream server takes about 2 minutes to export the calendar and the destination system times out after a few seconds.
