@@ -10,6 +10,7 @@ import threading
 app = Flask(__name__)
 FLASK_REQUEST_LATENCY = Histogram('flask_request_latency_seconds', 'Flask Request Latency', ['method', 'endpoint'])
 FLASK_REQUEST_COUNT = Counter('flask_request_count', 'Flask Request Count', ['method', 'endpoint', 'http_status'])
+update_time = Summary('update_seconds', 'Time spent loading data upstream')
 
 @app.route('/metrics')
 def metrics():
@@ -18,7 +19,6 @@ def metrics():
 @app.route('/', defaults={'path': 'root'})
 @app.route('/<path>')
 def calproxy(path):
-    print("request: %s" % path)
     # check if there is a corresponding env var set, return empty response (without requiring auth) if not
     url = os.environ.get('URL_' + path, False)
     if not url:
@@ -34,32 +34,40 @@ def calproxy(path):
                 {'WWW-Authenticate': 'Basic realm="Login Required"'}
             )
     # if no auth is required or if proper credentials were provided continue
+    print("request: %s" % path)
     data = cache.get(url)
     if data == None:
         #data = update(url)
+        print("no data for %s, spawning async update, returning 404" % path)
         async_update(url)
         abort(404)
     age = time.time() - data['time']
     print('data from %d (age %d)' % (data['time'], age))
-    if age > os.environ.get('cachetime', 15*60) or age < 0:
+    if age > os.environ.get('cachetime', 60*60) or age < 0:
+        print("old data for %s, spawning async update, returning old data" % path)
         async_update(url)
     resp = Response(data['data'].text)
     resp.headers['Content-Type'] = data['data'].headers['Content-Type']
     return resp
 
+@update_time.time()
 def update(url):
+    print("starting to load %s"%url)
     r = requests.get(url)
     r.raise_for_status()
     data = {'data': r, 'time': time.time()}
     cache.set(url, data, timeout=0)
+    print("done updating %s"%url)
     return data
 
 def async_update(url):
     existingthread = False
     for t in threading.enumerate():
         if t.name == url:
+            print("not starting new thread as there is one running already for %s" % url)
             return False
     threading.Thread(target=update,args=(url,),name=url).start()
+    print("spawned new thread for %s" % url)
 
 def before_request():
     request.start_time = time.time()
