@@ -10,7 +10,9 @@ import threading
 app = Flask(__name__)
 FLASK_REQUEST_LATENCY = Histogram('flask_request_latency_seconds', 'Flask Request Latency', ['method', 'endpoint'])
 FLASK_REQUEST_COUNT = Counter('flask_request_count', 'Flask Request Count', ['method', 'endpoint', 'http_status'])
+FLASK_REQUEST_SIZE = Gauge('flask_request_size_bytes', 'Flask Response Size', ['method', 'endpoint', 'http_status'])
 update_time = Summary('update_seconds', 'Time spent loading data upstream')
+request_bytes = Gauge('request_bytes', 'proxied file size', ['endpoint'])
 
 @app.route('/metrics')
 def metrics():
@@ -75,6 +77,7 @@ def before_request():
 def after_request(response):
     request_latency = max(time.time() - request.start_time, 0) # time can go backwards...
     FLASK_REQUEST_LATENCY.labels(request.method, request.path).observe(request_latency)
+    FLASK_REQUEST_SIZE.labels(request.method, request.path, response.status_code).set(len(response.data))
     FLASK_REQUEST_COUNT.labels(request.method, request.path, response.status_code).inc()
     return response
 
