@@ -21,6 +21,15 @@ def metrics():
 @app.route('/', defaults={'path': 'root'})
 @app.route('/<path>')
 def calproxy(path):
+
+    if path == "health":
+        #this one is special: pre-fetch all URLs
+        for envvar in os.environ:
+            if envvar.startswith('URL_'):
+                cachepath = envvar[4:]
+                url = os.environ.get(envvar)
+                cache_update(url)
+
     # check if there is a corresponding env var set, return empty response (without requiring auth) if not
     url = os.environ.get('URL_' + path, False)
     if not url:
@@ -37,27 +46,36 @@ def calproxy(path):
             )
     # if no auth is required or if proper credentials were provided continue
     print("request: %s" % path)
-    data = cache.get(url)
+    data = cache_update(url)
     if data == None:
-        #data = update(url)
-        print("no data for %s, spawning async update, returning 404" % path)
-        async_update(url)
+        print("no data yet for %s, returning 504 until fetched for the first time" % (url))
         abort(504)
-    age = time.time() - data['time']
-    print('data from %d (age %d)' % (data['time'], age))
-    if age > os.environ.get('cachetime', 60*60) or age < 0:
-        print("old data for %s, spawning async update, returning old data" % path)
-        async_update(url)
     resp = Response(data['data'].text)
     resp.headers['Content-Type'] = data['data'].headers['Content-Type']
     return resp
+
+def cache_update(url, asynchronously=True):
+    data = cache.get(url)
+    if data == None:
+        if asynchronously:
+            print("no data for %s, spawning async update" % url)
+            async_update(url)
+            return None
+        else:
+            data = update(url)
+    age = time.time() - data['time']
+    print('data for %s from %d (age %d)' % (url, data['time'], age))
+    if age > os.environ.get('cachetime', 60*60) or age < 0:
+        print("old data for %s, spawning async update, returning old data" % url)
+        async_update(url)
+    return data
 
 @update_time.time()
 def update(url):
     print("starting to load %s"%url)
     r = requests.get(url)
     r.raise_for_status()
-    data = {'data': r, 'time': time.time()}
+    data = {'data': r, 'time': time.time(), 'url': url}
     cache.set(url, data, timeout=0)
     print("done updating %s"%url)
     return data
