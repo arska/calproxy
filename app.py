@@ -18,18 +18,17 @@ request_bytes = Gauge('request_bytes', 'proxied file size', ['endpoint'])
 def metrics():
     return generate_latest(REGISTRY)
 
+@app.route('/health')
+def health():
+    for envvar in os.environ:
+        if envvar.startswith('URL_'):
+            cachepath = envvar[4:]
+            url = os.environ.get(envvar)
+            cache_update(url)
+
 @app.route('/', defaults={'path': 'root'})
 @app.route('/<path>')
 def calproxy(path):
-
-    if path == "health":
-        #this one is special: pre-fetch all URLs
-        for envvar in os.environ:
-            if envvar.startswith('URL_'):
-                cachepath = envvar[4:]
-                url = os.environ.get(envvar)
-                cache_update(url)
-
     # check if there is a corresponding env var set, return empty response (without requiring auth) if not
     url = os.environ.get('URL_' + path, False)
     if not url:
