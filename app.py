@@ -110,8 +110,7 @@ def cache_update(url, asynchronously=True):
             logging.debug("no data for %s, spawning async update", url)
             async_update(url)
             return None
-        else:
-            data = update(url)
+        data = update(url)
     age = time.time() - data['time']
     logging.debug('data for %s from %d (age %d)', url, data['time'], age)
     if age > os.environ.get('cachetime', 60*60) or age < 0:
