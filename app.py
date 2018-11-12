@@ -17,35 +17,33 @@ APP = Flask(__name__)  # Standard Flask app
 CACHE = FileSystemCache(cache_dir="cache/")
 
 FLASK_REQUEST_LATENCY = Histogram(
-    'flask_request_latency_seconds',
-    'Flask Request Latency',
-    ['method', 'endpoint']
+    "flask_request_latency_seconds",
+    "Flask Request Latency",
+    ["method", "endpoint"],
 )
 
 FLASK_REQUEST_COUNT = Counter(
-    'flask_request_count',
-    'Flask Request Count',
-    ['method', 'endpoint', 'http_status']
+    "flask_request_count",
+    "Flask Request Count",
+    ["method", "endpoint", "http_status"],
 )
 
 FLASK_REQUEST_SIZE = Gauge(
-    'flask_request_size_bytes',
-    'Flask Response Size',
-    ['method', 'endpoint', 'http_status']
+    "flask_request_size_bytes",
+    "Flask Response Size",
+    ["method", "endpoint", "http_status"],
 )
 
 
 UPDATE_TIME = Summary(
-    'update_seconds',
-    'Time spent loading data upstream',
-    None
+    "update_seconds", "Time spent loading data upstream", None
 )
 
-LOGFORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+LOGFORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(level=logging.DEBUG, format=LOGFORMAT)
 
 
-@APP.route('/metrics')
+@APP.route("/metrics")
 def metrics():
     """
     Route returning metrics to prometheus
@@ -53,39 +51,43 @@ def metrics():
     return generate_latest(REGISTRY)
 
 
-@APP.route('/health')
+@APP.route("/health")
 def health():
     """
     Kubernetes/OpenShift health check endpoint, abused for cache warming cron
     """
     for envvar in os.environ:
-        if envvar.startswith('URL_'):
+        if envvar.startswith("URL_"):
             url = os.environ.get(envvar)
             cache_update(url)
     return "OK"
 
 
-@APP.route('/', defaults={'path': 'root'})
-@APP.route('/<path>')
+@APP.route("/", defaults={"path": "root"})
+@APP.route("/<path>")
 def calproxy(path):
     """
     Proxy URL as defined in ENV vars
     """
     # check if there is a corresponding env var set,
     # return empty response (without requiring auth) if not
-    url = os.environ.get('URL_' + path, False)
+    url = os.environ.get("URL_" + path, False)
     if not url:
-        return ''
+        return ""
 
     auth = request.authorization
-    if os.environ.get('AUTHUSER', False) and os.environ.get('AUTHPASS', False):
+    if os.environ.get("AUTHUSER", False) and os.environ.get("AUTHPASS", False):
         # require authentication
-        if not auth or not auth.username == os.environ.get('AUTHUSER')\
-                    or not auth.password == os.environ.get('AUTHPASS'):
+        if (
+            not auth
+            or not auth.username == os.environ.get("AUTHUSER")
+            or not auth.password == os.environ.get("AUTHPASS")
+        ):
             return Response(
-                'Could not verify your access level for that URL.\n'
-                'You have to login with proper credentials', 401,
-                {'WWW-Authenticate': 'Basic realm="Login Required"'}
+                "Could not verify your access level for that URL.\n"
+                "You have to login with proper credentials",
+                401,
+                {"WWW-Authenticate": 'Basic realm="Login Required"'},
             )
     # if no auth is required or if proper credentials were provided continue
     logging.debug("request: %s", path)
@@ -93,10 +95,10 @@ def calproxy(path):
     if data is None:
         logging.debug("no data for %s, returning 504 until fetched", url)
         abort(504)
-    resp = Response(data['data'].text)
-    contenttype = data['data'].headers.get('Content-Type', None)
+    resp = Response(data["data"].text)
+    contenttype = data["data"].headers.get("Content-Type", None)
     if contenttype is not None:
-        resp.headers['Content-Type'] = contenttype
+        resp.headers["Content-Type"] = contenttype
     return resp
 
 
@@ -111,9 +113,9 @@ def cache_update(url, asynchronously=True):
             async_update(url)
             return None
         data = update(url)
-    age = time.time() - data['time']
-    logging.debug('data for %s from %d (age %d)', url, data['time'], age)
-    if age > os.environ.get('cachetime', 60*60) or age < 0:
+    age = time.time() - data["time"]
+    logging.debug("data for %s from %d (age %d)", url, data["time"], age)
+    if age > os.environ.get("cachetime", 60 * 60) or age < 0:
         logging.debug("old data for %s, returning stale data", url)
         async_update(url)
     return data
@@ -127,7 +129,7 @@ def update(url):
     logging.debug("starting to load %s", url)
     req = requests.get(url)
     req.raise_for_status()
-    data = {'data': req, 'time': time.time(), 'url': url}
+    data = {"data": req, "time": time.time(), "url": url}
     CACHE.set(url, data, timeout=0)
     logging.debug("done updating %s", url)
     return data
@@ -160,16 +162,15 @@ def after_request(response):
     # time can go backwards...
     request_latency = max(time.time() - request.start_time, 0)
     # pylint: disable-msg=no-member
-    FLASK_REQUEST_LATENCY.labels(request.method, request.path)\
-                         .observe(request_latency)
-    FLASK_REQUEST_SIZE.labels(request.method,
-                              request.path,
-                              response.status_code)\
-                      .set(len(response.data))
-    FLASK_REQUEST_COUNT.labels(request.method,
-                               request.path,
-                               response.status_code)\
-                       .inc()
+    FLASK_REQUEST_LATENCY.labels(request.method, request.path).observe(
+        request_latency
+    )
+    FLASK_REQUEST_SIZE.labels(
+        request.method, request.path, response.status_code
+    ).set(len(response.data))
+    FLASK_REQUEST_COUNT.labels(
+        request.method, request.path, response.status_code
+    ).inc()
     return response
 
 
@@ -177,4 +178,4 @@ if __name__ == "__main__":
     load_dotenv()
     APP.before_request(before_request)
     APP.after_request(after_request)
-    APP.run(host='0.0.0.0', port=os.environ.get('listenport', 8080))
+    APP.run(host="0.0.0.0", port=os.environ.get("listenport", 8080))
