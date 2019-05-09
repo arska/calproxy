@@ -36,7 +36,7 @@ FLASK_REQUEST_SIZE = Gauge(
 
 
 UPDATE_TIME = Summary(
-    "update_seconds", "Time spent loading data upstream", None
+    "update_seconds", "Time spent loading data upstream"
 )
 
 LOGFORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
