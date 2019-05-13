@@ -16,7 +16,7 @@ markupsafe==1.1.1         # via jinja2
 pluggy==0.11.0            # via tox
 prometheus-client==0.6.0
 py==1.8.0                 # via tox
-python-dotenv==0.10.1
+python-dotenv==0.10.2
 requests==2.21.0
 six==1.12.0               # via tox, tox-pip-extensions
 toml==0.10.0              # via tox
