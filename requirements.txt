@@ -24,4 +24,4 @@ tox-pip-extensions==1.6.0
 tox==3.9.0
 urllib3==1.24.3           # via requests
 virtualenv==16.5.0        # via tox
-werkzeug==0.15.2
+werkzeug==0.15.4
