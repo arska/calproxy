@@ -14,7 +14,7 @@ itsdangerous==1.1.0       # via flask
 jinja2==2.10.1            # via flask
 markupsafe==1.1.1         # via jinja2
 pluggy==0.11.0            # via tox
-prometheus-client==0.6.0
+prometheus_client==0.7.1
 py==1.8.0                 # via tox
 python-dotenv==0.10.2
 requests==2.21.0
