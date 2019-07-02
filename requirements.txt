@@ -10,18 +10,22 @@ click==7.0                # via flask
 filelock==3.0.10          # via tox
 flask==1.0.2
 idna==2.8                 # via requests
+importlib-metadata==0.18  # via pluggy, tox
 itsdangerous==1.1.0       # via flask
 jinja2==2.10.1            # via flask
 markupsafe==1.1.1         # via jinja2
-pluggy==0.11.0            # via tox
+packaging==19.0           # via tox
+pluggy==0.12.0            # via tox
 prometheus-client==0.6.0
 py==1.8.0                 # via tox
+pyparsing==2.4.0          # via packaging
 python-dotenv==0.10.2
 requests==2.21.0
-six==1.12.0               # via tox, tox-pip-extensions
+six==1.12.0               # via packaging, tox, tox-pip-extensions
 toml==0.10.0              # via tox
 tox-pip-extensions==1.6.0
-tox==3.9.0
+tox==3.13.2
 urllib3==1.24.3           # via requests
 virtualenv==16.5.0        # via tox
 werkzeug==0.15.2
+zipp==0.5.1               # via importlib-metadata
