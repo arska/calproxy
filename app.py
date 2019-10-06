@@ -4,28 +4,32 @@ Caching http proxy
 
 import logging
 import os
-import time
 import threading
+import time
+
 import requests
-from werkzeug.contrib.cache import FileSystemCache
-from flask import Flask, Response, request, abort
-from prometheus_client import Histogram, Counter, Gauge, Summary
-from prometheus_client import generate_latest, REGISTRY
 from dotenv import load_dotenv
+
+from flask import Flask, Response, abort, request
+from prometheus_client import (
+    REGISTRY,
+    Counter,
+    Gauge,
+    Histogram,
+    Summary,
+    generate_latest,
+)
+from werkzeug.contrib.cache import FileSystemCache
 
 APP = Flask(__name__)  # Standard Flask app
 CACHE = FileSystemCache(cache_dir="cache/")
 
 FLASK_REQUEST_LATENCY = Histogram(
-    "flask_request_latency_seconds",
-    "Flask Request Latency",
-    ["method", "endpoint"],
+    "flask_request_latency_seconds", "Flask Request Latency", ["method", "endpoint"]
 )
 
 FLASK_REQUEST_COUNT = Counter(
-    "flask_request_count",
-    "Flask Request Count",
-    ["method", "endpoint", "http_status"],
+    "flask_request_count", "Flask Request Count", ["method", "endpoint", "http_status"]
 )
 
 FLASK_REQUEST_SIZE = Gauge(
@@ -35,9 +39,7 @@ FLASK_REQUEST_SIZE = Gauge(
 )
 
 
-UPDATE_TIME = Summary(
-    "update_seconds", "Time spent loading data upstream"
-)
+UPDATE_TIME = Summary("update_seconds", "Time spent loading data upstream")
 
 LOGFORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(level=logging.DEBUG, format=LOGFORMAT)
@@ -162,15 +164,11 @@ def after_request(response):
     # time can go backwards...
     request_latency = max(time.time() - request.start_time, 0)
     # pylint: disable-msg=no-member
-    FLASK_REQUEST_LATENCY.labels(request.method, request.path).observe(
-        request_latency
+    FLASK_REQUEST_LATENCY.labels(request.method, request.path).observe(request_latency)
+    FLASK_REQUEST_SIZE.labels(request.method, request.path, response.status_code).set(
+        len(response.data)
     )
-    FLASK_REQUEST_SIZE.labels(
-        request.method, request.path, response.status_code
-    ).set(len(response.data))
-    FLASK_REQUEST_COUNT.labels(
-        request.method, request.path, response.status_code
-    ).inc()
+    FLASK_REQUEST_COUNT.labels(request.method, request.path, response.status_code).inc()
     return response
 
 

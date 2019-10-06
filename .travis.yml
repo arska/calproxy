@@ -1,17 +1,17 @@
 language: python
 python:
-  - '3.5'
-  - '3.6'
-
+- '3.5'
+- '3.6'
 install: pip install tox-travis
 script: tox
-
-stages:
-  - lint
-# - test
-jobs:
-  include:
-    - { stage: lint, python: 3.5, env: TOXENV=flake8 }
-    - { stage: lint, python: 3.6, env: TOXENV=flake8 }
-    - { stage: lint, python: 3.5, env: TOXENV=pylint }
-    - { stage: lint, python: 3.6, env: TOXENV=pylint }
+notifications:
+  webhooks:
+    on_success: always
+    on_failure: never
+    on_start: never
+    on_cancel: never
+    on_error: never
+    if: branch = master
+    urls:
+      secure: nJUCVJf0c7LLJjqA60RP2sDdffHU6dCAGAfhfq8JlymJxRJx7NoSnT+3Jm0vHjk90753o3MA4SUAKEMe0PWiugcV76624lNp16qSzZE/WJHJBToSYzl/0GLqoth1Tgflh1uke1sgyXlObBdx491Ca/jcMS5zbJkkFdEO1nRlkvKlapyjLlPazxXm5dytvvk1Z9lVLF2TPCZR0yp7qp6657rr2qAEcQt8usQjyK3vQys+UfIRi579mqfHDuT0YGoSNFXwW9DV1ONyaHzHX0ItlutKIa5XUWBbjQ4Zlg0OsUZ4XvvRmJEea6U7mBB/71/+tWb0raweHu6sgam2IYX8bN4KWAoiR2QDzUwMcL/sNJs15NpySA+7BHzLpSHLNe7ZHjnvJ7CkWi0nouxxsWlNHNS3mbJ//XadtK/mchZN0Qt1RddGrAXGg8GVEDN1yEqZILSXT4vOECrZ99tsL46Hrv1ycs1FhVe2ta5EjqH5b44ZTuhjQUbCRRcuN250jSHrAgYlAcmtV1tqpdiydRT4pVTOmXW2NEPNSfcqvCJS3PpnHcLLlyGNo5ycMMZihanm6ezciWWwZ373J6r0okb9qzTzDrYK4vVnRGt56KrQ/tFW1NJ3YLi5SdcRhyeXBKF9VWi8HkjNjoSvbT8iANb8K0XzAqVLCIhWS3Ssjibl8QY=
+      # deploy to appuio.ch
