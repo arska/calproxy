@@ -1,5 +1,5 @@
 # Calproxy
-[![Build Status](https://travis-ci.org/arska/calproxy.png)](https://travis-ci.org/arska/calproxy)
+[![Build Status](https://travis-ci.com/arska/calproxy.svg?branch=master)](https://travis-ci.com/arska/calproxy)
 
 Simple HTTP proxy to proxy a fixed URL per requested path, optionally with HTTP basic auth.
 
