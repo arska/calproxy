@@ -66,6 +66,7 @@ def health():
 
 
 @APP.route("/", defaults={"path": "root"})
+@APP.route("/<path>.ics")
 @APP.route("/<path>")
 def calproxy(path):
     """
