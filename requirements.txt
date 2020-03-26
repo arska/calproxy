@@ -8,25 +8,22 @@ certifi==2019.9.11        # via requests
 chardet==3.0.4            # via requests
 click==7.0                # via flask
 filelock==3.0.12          # via tox
-flask==1.1.1
+flask==1.1.1              # via -r requirements.in
 idna==2.8                 # via requests
-importlib-metadata==0.23  # via pluggy, tox
 itsdangerous==1.1.0       # via flask
 jinja2==2.10.3            # via flask
 markupsafe==1.1.1         # via jinja2
-more-itertools==7.2.0     # via zipp
 packaging==19.2           # via tox
 pluggy==0.13.0            # via tox
-prometheus-client==0.7.1
+prometheus-client==0.7.1  # via -r requirements.in
 py==1.8.0                 # via tox
 pyparsing==2.4.2          # via packaging
-python-dotenv==0.10.3
-requests==2.22.0
-six==1.12.0               # via packaging, tox, tox-pip-extensions
+python-dotenv==0.10.3     # via -r requirements.in
+requests==2.22.0          # via -r requirements.in
+six==1.14.0               # via packaging, tox, tox-pip-extensions
 toml==0.10.0              # via tox
-tox-pip-extensions==1.6.0
-tox==3.14.0
+tox-pip-extensions==1.6.0  # via -r requirements.in
+tox==3.14.6               # via -r requirements.in, tox-pip-extensions
 urllib3==1.25.6           # via requests
 virtualenv==16.7.5        # via tox
-werkzeug==0.16.0
-zipp==0.6.0               # via importlib-metadata
+werkzeug==0.16.0          # via -r requirements.in, flask
