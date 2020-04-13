@@ -3,5 +3,4 @@ werkzeug
 flask
 prometheus_client
 python-dotenv
-tox
-tox-pip-extensions
+cachelib

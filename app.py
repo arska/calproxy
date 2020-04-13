@@ -19,7 +19,7 @@ from prometheus_client import (
     Summary,
     generate_latest,
 )
-from werkzeug.contrib.cache import FileSystemCache
+from cachelib import FileSystemCache
 
 APP = Flask(__name__)  # Standard Flask app
 CACHE = FileSystemCache(cache_dir="cache/")
