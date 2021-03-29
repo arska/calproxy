@@ -5,16 +5,32 @@
 #    pip-compile requirements.in
 #
 cachelib==0.1
-certifi==2020.4.5.1       # via requests
-chardet==3.0.4            # via requests
-click==7.1.1              # via flask
+    # via -r requirements.in
+certifi==2020.4.5.1
+    # via requests
+chardet==3.0.4
+    # via requests
+click==7.1.1
+    # via flask
 flask==1.1.2
-idna==2.9                 # via requests
-itsdangerous==1.1.0       # via flask
-jinja2==2.11.2            # via flask
-markupsafe==1.1.1         # via jinja2
+    # via -r requirements.in
+idna==2.9
+    # via requests
+itsdangerous==1.1.0
+    # via flask
+jinja2==2.11.2
+    # via flask
+markupsafe==1.1.1
+    # via jinja2
 prometheus-client==0.7.1
-python-dotenv==0.12.0
+    # via -r requirements.in
+python-dotenv==0.16.0
+    # via -r requirements.in
 requests==2.23.0
-urllib3==1.25.8           # via requests
+    # via -r requirements.in
+urllib3==1.25.8
+    # via requests
 werkzeug==1.0.1
+    # via
+    #   -r requirements.in
+    #   flask
