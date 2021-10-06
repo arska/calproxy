@@ -20,5 +20,5 @@ python-dotenv==0.19.0
 requests==2.26.0
 typing-extensions==3.10.0.2  # via importlib-metadata
 urllib3==1.26.7           # via requests
-werkzeug==2.0.1
+werkzeug==2.0.2
 zipp==3.6.0               # via importlib-metadata
