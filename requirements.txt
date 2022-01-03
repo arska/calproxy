@@ -17,7 +17,7 @@ jinja2==3.0.3             # via flask
 markupsafe==2.0.1         # via jinja2
 prometheus-client==0.12.0
 python-dotenv==0.19.2
-requests==2.26.0
+requests==2.27.0
 typing-extensions==3.10.0.2  # via importlib-metadata
 urllib3==1.26.7           # via requests
 werkzeug==2.0.2
