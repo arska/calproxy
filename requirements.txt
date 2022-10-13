@@ -15,7 +15,7 @@ importlib-metadata==4.13.0  # via click
 itsdangerous==2.1.2       # via flask
 jinja2==3.1.2             # via flask
 markupsafe==2.1.1         # via jinja2
-prometheus-client==0.14.1
+prometheus-client==0.15.0
 python-dotenv==0.21.0
 requests==2.28.1
 typing-extensions==3.10.0.2  # via importlib-metadata
