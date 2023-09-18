@@ -21,4 +21,4 @@ requests==2.31.0
 typing-extensions==4.8.0  # via importlib-metadata
 urllib3==2.0.4           # via requests
 werkzeug==2.3.7
-zipp==3.16.2               # via importlib-metadata
+zipp==3.17.0               # via importlib-metadata
